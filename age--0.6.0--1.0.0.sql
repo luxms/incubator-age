@@ -20,6 +20,11 @@
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
 \echo Use "ALTER EXTENSION age UPDATE TO '1.0.0'" to load this file. \quit
 
+SELECT pg_catalog.pg_extension_config_dump('ag_graph', '');
+
+SELECT pg_catalog.pg_extension_config_dump('ag_label', '');
+
+
 CREATE OR REPLACE FUNCTION ag_catalog.create_vlabel(graph_name name, label_name name)
     RETURNS void
     LANGUAGE c
