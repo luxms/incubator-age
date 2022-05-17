@@ -20,18 +20,18 @@
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
 \echo Use "ALTER EXTENSION age UPDATE TO '1.0.0'" to load this file. \quit
 
-CREATE FUNCTION ag_catalog.create_vlabel(graph_name name, label_name name)
+CREATE OR REPLACE FUNCTION ag_catalog.create_vlabel(graph_name name, label_name name)
     RETURNS void
     LANGUAGE c
 AS 'MODULE_PATHNAME';
 
-CREATE FUNCTION ag_catalog.create_elabel(graph_name name, label_name name)
+CREATE OR REPLACE FUNCTION ag_catalog.create_elabel(graph_name name, label_name name)
     RETURNS void
     LANGUAGE c
 AS 'MODULE_PATHNAME';
 
 -- binary I/O functions
-CREATE FUNCTION ag_catalog.graphid_send(graphid)
+CREATE OR REPLACE FUNCTION ag_catalog.graphid_send(graphid)
 RETURNS bytea
 LANGUAGE c
 IMMUTABLE
@@ -39,7 +39,7 @@ RETURNS NULL ON NULL INPUT
 PARALLEL SAFE
 AS 'MODULE_PATHNAME';
 
-CREATE FUNCTION ag_catalog.graphid_recv(internal)
+CREATE OR REPLACE FUNCTION ag_catalog.graphid_recv(internal)
 RETURNS graphid
 LANGUAGE c
 IMMUTABLE
@@ -53,7 +53,7 @@ typreceive = 'ag_catalog.graphid_recv'
 WHERE typname = 'graphid';
 
 -- binary I/O functions
-CREATE FUNCTION ag_catalog.agtype_send(agtype)
+CREATE OR REPLACE FUNCTION ag_catalog.agtype_send(agtype)
 RETURNS bytea
 LANGUAGE c
 IMMUTABLE
@@ -61,7 +61,7 @@ RETURNS NULL ON NULL INPUT
 PARALLEL SAFE
 AS 'MODULE_PATHNAME';
 
-CREATE FUNCTION ag_catalog.agtype_recv(internal)
+CREATE OR REPLACE FUNCTION ag_catalog.agtype_recv(internal)
 RETURNS agtype
 LANGUAGE c
 IMMUTABLE
@@ -75,7 +75,7 @@ typreceive = 'ag_catalog.agtype_recv'
 WHERE typname = 'agtype';
 
 -- agtype -> int4[]
-CREATE FUNCTION ag_catalog.agtype_to_int4_array(variadic "any")
+CREATE OR REPLACE FUNCTION ag_catalog.agtype_to_int4_array(variadic "any")
     RETURNS int[]
     LANGUAGE c
     STABLE
@@ -86,7 +86,7 @@ AS 'MODULE_PATHNAME';
 CREATE CAST (agtype AS int[])
     WITH FUNCTION ag_catalog.agtype_to_int4_array(variadic "any");
 
-CREATE FUNCTION ag_catalog.age_eq_tilde(agtype, agtype)
+CREATE OR REPLACE FUNCTION ag_catalog.age_eq_tilde(agtype, agtype)
 RETURNS agtype
 LANGUAGE c
 STABLE
@@ -104,7 +104,7 @@ PARALLEL UNSAFE -- might be safe
 AS 'MODULE_PATHNAME';
 
 -- function to build an edge for a VLE match
-CREATE FUNCTION ag_catalog.age_build_vle_match_edge(agtype, agtype)
+CREATE OR REPLACE FUNCTION ag_catalog.age_build_vle_match_edge(agtype, agtype)
 RETURNS agtype
 LANGUAGE C
 STABLE
@@ -112,7 +112,7 @@ PARALLEL SAFE
 AS 'MODULE_PATHNAME';
 
 -- function to match a terminal vle edge
-CREATE FUNCTION ag_catalog.age_match_vle_terminal_edge(agtype, agtype, agtype)
+CREATE OR REPLACE FUNCTION ag_catalog.age_match_vle_terminal_edge(agtype, agtype, agtype)
 RETURNS boolean
 LANGUAGE C
 STABLE
@@ -121,7 +121,7 @@ PARALLEL SAFE
 AS 'MODULE_PATHNAME';
 
 -- function to create an AGTV_PATH from a VLE_path_container
-CREATE FUNCTION ag_catalog.age_materialize_vle_path(agtype)
+CREATE OR REPLACE FUNCTION ag_catalog.age_materialize_vle_path(agtype)
 RETURNS agtype
 LANGUAGE C
 STABLE
@@ -130,7 +130,7 @@ PARALLEL SAFE
 AS 'MODULE_PATHNAME';
 
 -- function to create an AGTV_ARRAY of edges from a VLE_path_container
-CREATE FUNCTION ag_catalog.age_materialize_vle_edges(agtype)
+CREATE OR REPLACE FUNCTION ag_catalog.age_materialize_vle_edges(agtype)
 RETURNS agtype
 LANGUAGE C
 STABLE
@@ -138,7 +138,7 @@ RETURNS NULL ON NULL INPUT
 PARALLEL SAFE
 AS 'MODULE_PATHNAME';
 
-CREATE FUNCTION ag_catalog.age_match_vle_edge_to_id_qual(agtype, agtype, agtype)
+CREATE OR REPLACE FUNCTION ag_catalog.age_match_vle_edge_to_id_qual(agtype, agtype, agtype)
 RETURNS boolean
 LANGUAGE C
 STABLE
@@ -146,7 +146,7 @@ RETURNS NULL ON NULL INPUT
 PARALLEL SAFE
 AS 'MODULE_PATHNAME';
 
-CREATE FUNCTION ag_catalog.age_match_two_vle_edges(agtype, agtype)
+CREATE OR REPLACE FUNCTION ag_catalog.age_match_two_vle_edges(agtype, agtype)
 RETURNS boolean
 LANGUAGE C
 STABLE
@@ -155,22 +155,14 @@ PARALLEL SAFE
 AS 'MODULE_PATHNAME';
 
 -- list functions
-CREATE FUNCTION ag_catalog.age_keys(agtype)
+CREATE OR REPLACE FUNCTION ag_catalog.age_keys(agtype)
 RETURNS agtype
 LANGUAGE c
 STABLE
 PARALLEL SAFE
 AS 'MODULE_PATHNAME';
 
-CREATE FUNCTION ag_catalog.age_labels(agtype)
-RETURNS agtype
-LANGUAGE c
-STABLE
-RETURNS NULL ON NULL INPUT
-PARALLEL SAFE
-AS 'MODULE_PATHNAME';
-
-CREATE FUNCTION ag_catalog.age_nodes(agtype)
+CREATE OR REPLACE FUNCTION ag_catalog.age_labels(agtype)
 RETURNS agtype
 LANGUAGE c
 STABLE
@@ -178,14 +170,22 @@ RETURNS NULL ON NULL INPUT
 PARALLEL SAFE
 AS 'MODULE_PATHNAME';
 
-CREATE FUNCTION ag_catalog.age_relationships(agtype)
+CREATE OR REPLACE FUNCTION ag_catalog.age_nodes(agtype)
+RETURNS agtype
+LANGUAGE c
+STABLE
+RETURNS NULL ON NULL INPUT
+PARALLEL SAFE
+AS 'MODULE_PATHNAME';
+
+CREATE OR REPLACE FUNCTION ag_catalog.age_relationships(agtype)
 RETURNS agtype
 LANGUAGE c
 STABLE
 PARALLEL SAFE
 AS 'MODULE_PATHNAME';
 
-CREATE FUNCTION ag_catalog.age_range(variadic "any")
+CREATE OR REPLACE FUNCTION ag_catalog.age_range(variadic "any")
 RETURNS agtype
 LANGUAGE c
 STABLE
@@ -197,7 +197,7 @@ AS 'MODULE_PATHNAME';
 -----------------------------------------------------------------
 -- 1.0 functions below
 
-CREATE FUNCTION ag_catalog.load_labels_from_file(graph_name name,
+CREATE OR REPLACE FUNCTION ag_catalog.load_labels_from_file(graph_name name,
                                             label_name name,
                                             file_path text,
                                             id_field_exists bool default true)
@@ -205,19 +205,19 @@ CREATE FUNCTION ag_catalog.load_labels_from_file(graph_name name,
     LANGUAGE c
     AS 'MODULE_PATHNAME';
 
-CREATE FUNCTION ag_catalog.load_edges_from_file(graph_name name,
+CREATE OR REPLACE FUNCTION ag_catalog.load_edges_from_file(graph_name name,
                                                 label_name name,
                                                 file_path text)
     RETURNS void
     LANGUAGE c
     AS 'MODULE_PATHNAME';
 
-CREATE FUNCTION ag_catalog._cypher_merge_clause(internal)
+CREATE OR REPLACE FUNCTION ag_catalog._cypher_merge_clause(internal)
 RETURNS void
 LANGUAGE c
 AS 'MODULE_PATHNAME';
 
-CREATE FUNCTION ag_catalog.age_unnest(agtype, block_types boolean = false)
+CREATE OR REPLACE FUNCTION ag_catalog.age_unnest(agtype, block_types boolean = false)
     RETURNS SETOF agtype
     LANGUAGE c
     STABLE
